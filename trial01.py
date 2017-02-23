@@ -2,7 +2,7 @@
 """
 Created on Tue Feb 21 10:55:15 2017
 
-@author: pemoser
+@author: pemoser and danila
 """
 
 import dlh
@@ -198,3 +198,5 @@ def draw(pizza):
 
 print("WHITE means uncovered")
 plt.matshow(draw(pizza), cmap=plt.cm.Greys)
+
+
