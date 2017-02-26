@@ -2,11 +2,11 @@
 
 files = ["kittens.in", "me_at_the_zoo.in", "trending_today.in", "videos_worth_spreading.in"]
 
-import numpy as np
 import collections
 Video = collections.namedtuple('Video', 'id, size, requests')
 Request = collections.namedtuple('Request', 'id, count, video, endPointId')
 EndPoint = collections.namedtuple('EndPoint', 'id, latencyDC, noCaches, connections')
+Connection = collections.namedtuple('Connection', 'cacheId, latencyC')
 
 class Cache:
     def __init__(self, id, capacity):
@@ -63,8 +63,8 @@ class Farm:
 
             connections = []
             for cache in range(noCaches):
-                connection = [int(x) for x in file.readline().split(" ")]
-                connections.append(connection)
+                (cacheId, latencyC) = [int(x) for x in file.readline().split(" ")]
+                connections.append(Connection(cacheId, latencyC))
 
 
             self.endPoints.append(EndPoint(i, latencyDC, noCaches, connections))
@@ -111,38 +111,15 @@ class Farm:
         print("Video Size     : avg: ", avgVS)
 
 
-#    def newStructs(self):
-#        self.videoEndP = np.zeros((self.V, self.E), int)
-#        for re in self.requests:
-#            self.videoEndP[re.video][re.endPointId] = int(re.count)
-#
-#        self.cacheEndP = np.zeros((self.C, self.E), int)
-#        for ep in self.endPoints:
-#            for c in ep.connections:
-#                #print(c)
-#                self.cacheEndP[c[0]][ep.id] = c[1]
-#
-#        self.endPLatency = []
-#
-#    def calcolateScore(self, video, cache):
-#        s = 0
-#        for i, re in enumerate(self.videoEndP[video,:]):
-#            latencyEPC = self.cacheEndP[cache][i]
-#            latencyEPDC = self.endPoints[i].latencyDC
-#            s += re * (latencyEPDC - latencyEPC)
-#
-#        return s
-
     def calcScore2(self, video, cache):
         """
         Calculations without numpy arrays, just lists... this is much faster!
         """
         s = 0
-        video = self.videos[video]
         for i, re in enumerate(video.requests):
             ep = self.endPoints[re.endPointId]
             try:
-                latencyEPC = ep.connections[cache][1]
+                latencyEPC = ep.connections[cache.id].latencyC
             except:
                 latencyEPC = 0
 
@@ -158,7 +135,7 @@ class Farm:
             if i % 100 == 0:
                 print("...for video", v.id)
             for c in self.caches:
-                self.all.append((self.calcScore2(v.id,c.id), v.id, c.id))
+                self.all.append((self.calcScore2(v,c), v.id, c.id))
 
         self.all = sorted(self.all, key=lambda x: x[0], reverse=True)
 
